@@ -1,0 +1,18 @@
+[
+    {
+        "codigo": "P001",
+        "nombre": "Ceviche de camaron",
+        "precio": "7,25"
+    },
+    {
+        "codigo": "P002",
+        "nombre": "Espagueti",
+        "precio": "4,50"
+    },
+    {
+        "codigo": "P003",
+        "nombre": "Pollo al horno",
+        "precio": "5,00"
+    }
+]
+
