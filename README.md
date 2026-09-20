@@ -2,109 +2,17 @@
 
 ## Tema
 
-Fundamentos de interfaces graficas de usuario con Tkinter.
+Componentes y contenedores en una aplicación de biblioteca con Tkinter.
 
 ## Objetivo de aprendizaje
 
-Comprender como una aplicacion de consola puede incorporar una interfaz grafica sin reemplazar su arquitectura. La GUI se encarga de la presentacion y de los eventos, mientras que los servicios conservan la logica del sistema y el acceso a los datos.
+Evolucionar el proyecto de la Semana 13 sin cambiar su arquitectura principal. La aplicación conserva el inicio de sesión, los modelos, los servicios y la persistencia en JSON, pero ahora organiza mejor la interfaz mediante Frameformularios LabelFrame, tablas e iconos.
 
 ## Evolucion del programa
 
-ANTES
-
-Usuario -> CLI -> Servicios -> Modelos -> JSON
-
-AHORA
-
-Usuario -> GUI -> Eventos -> Servicios -> Modelos -> JSON
-
-## Capas del proyecto
-
-`modelos/`: clases sencillas que representan la informacion del sistema, como usuarios y productos.
-Tambien aplican validaciones basicas con `property` para evitar objetos con datos obligatorios vacios.
-
-`servicios/`: clases que contienen la logica de negocio y el acceso a los archivos JSON.
-
-`datos/`: archivos JSON con informacion persistente de ejemplo.
-
-`ui/`: vistas graficas creadas con Tkinter para interactuar con el usuario.
-
-`main.py`: punto de entrada que inicializa los servicios, muestra la primera vista y ejecuta la aplicacion.
-
-## Componentes Tkinter utilizados
-
-`Tk`: crea la ventana principal de la aplicacion.
-
-`Label`: muestra textos dentro de la interfaz.
-
-`Entry`: permite ingresar datos como usuario y contrasena.
-
-`Button`: ejecuta una accion cuando el usuario hace clic.
-
-`messagebox`: muestra mensajes emergentes simples.
-
-`ttk.Style`: permite definir estilos reutilizables para algunos componentes visuales.
-
-## Concepto de evento
-
-Usuario hace clic -> Button genera una accion -> command ejecuta un metodo -> el metodo consulta el servicio -> la interfaz muestra el resultado.
-
-En el login, el boton usa `command=self.iniciar_sesion`. Ese metodo obtiene los datos escritos, valida campos vacios y solicita al servicio la verificacion de credenciales.
-
-## Funcionamiento del proyecto
-
-Inicio -> Login -> Validacion -> Interfaz principal -> Cerrar sesion -> Login
-
-La interfaz principal muestra una barra superior con opciones visuales. Las secciones de libros y usuarios permiten listar informacion cargada desde JSON. Las operaciones de prestamos y ventas todavia no estan implementadas.
-
-La pantalla central cambia su contenido cuando el usuario selecciona una opcion superior. Esto permite visualizar el concepto de evento sin construir todavia formularios ni operaciones CRUD.
-
-## Persistencia JSON
-
-La persistencia JSON desarrollada previamente continua funcionando. Los usuarios y libros se cargan desde archivos locales al iniciar la aplicacion.
-
-La GUI no reemplaza los servicios ni los modelos. La interfaz solicita operaciones al servicio, y el servicio trabaja con los modelos y los datos persistidos.
-
-Los modelos usan constructores tradicionales con `__init__` y validaciones con `property`, de modo que el paso de diccionarios JSON a objetos sea facil de seguir durante la explicacion.
-
-## Requisitos
-
-- Python 3.x
-- Tkinter disponible en la instalacion de Python
-
-No se requieren dependencias externas.
-
-## Como ejecutar
-
-Desde la carpeta del proyecto:
-
-```bash
-python main.py
-```
-
-En Windows, si el comando `python` no esta disponible en la terminal, puede usarse:
-
-```bash
-py main.py
-```
-
-## Credenciales de demostracion
-
-Se crearon 4 usuarios diferentes para probar la eficiencia del programa
-Siendo el primer usuario Edison Moyano
-Usuario: `admin`
-
-Contrasena: `1234`
+En el proyecto se implemento, la incorporacón de iconos y logotipo que se guardaron en la carpeta assets/logo; ademas se incorporó la función de agregar, eliminar productos; las nuevas funciones se centrarón en mejorar la experiencia del usuario basada en la interfaz gráfica.
 
 
-
-## Nota educativa sobre autenticacion
-
-La autenticacion de este proyecto es local y simulada. Las contrasenas se guardan en JSON solo para fines pedagogicos. En una aplicacion real, almacenar contrasenas de esta forma no seria apropiado ni seguro.
-
-## Proxima evolucion
-
-En las siguientes practicas se profundizara en componentes y contenedores para construir las operaciones reales de la aplicacion.
 
 ## Estructura
 
@@ -124,5 +32,87 @@ restaurante_app/
 │   ├── __init__.py
 │   ├── login_view.py
 │   └── main_view.py
+├── assets/                
 ├── main.py
 └── README.md
+
+## Organización del logo
+El logo principal debe guardarse en:
+
+restaurante_app/assets/logo/logo.png
+El icono de ventana debe guardarse en:
+
+restaurante_app/assets/logo/icono.png
+En este proyecto, logo.pngmide 150x150 px. Para que no ocupe demasiado espacio, en el login se reduce con subsample(2, 2)y en el menú lateral se reduce con subsample(3, 3).
+
+El archivo icono.pngmide 64x64 px. Ese tamaño funciona bien para el icono de la ventana.
+
+La integración se realiza en tres lugares:
+
+main.py: configura el icono de la ventana usando icono.pngcon root.iconphoto(...).
+
+ui/login_view.py: carga logo.pngcon tk.PhotoImagey lo muestra sobre el titulo del login.
+
+ui/main_view.py: reutiliza logo.png, lo reduce y lo muestra en el menú lateral.
+
+Importante: las rutas son relativas al proyecto. No se usan rutas absolutas del equipo, por eso el proyecto puede mover de carpeta sin romper la carga de imágenes.
+
+Para esta practica se usa PNG porque es mas simple de explicar con tk.PhotoImage. El formato .icopuede usarse en Windows, pero debe ser un icono real y no un PNG renombrado.
+
+Pantallas principales
+LoginView: pantalla de inicio de sesión. Usa el logo del sistema, Entrypara usuario y contraseña, y un botón con command=para validar el acceso.
+
+Inicio: panel de resumen. Muestra cuántos usuarios y libros existen en los archivos JSON.
+
+Usuarios: pantalla de consulta. Muestra los usuarios registrados en una tabla, sin CRUD, para mantener esta sección sencilla.
+
+Libros: pantalla de gestión. Incluye formulario, botones y tabla para registrar, cargar, actualizar y eliminar productos.
+
+Componentes Tkinter utilizados
+Label: productos.
+
+Entry: campos de entrada para iniciar sesión y formulario de libros.
+
+ttk.Button: botones de navegación y acciones.
+
+ttk.Treeview: tablas de usuarios y productos.
+
+ttk.Scrollbar: barra de desplazamiento para las tablas.
+
+messagebox: mensajes simples de confirmación o error.
+
+Contenedores utilizados
+Tk: ventana principal de la aplicación.
+
+Frame: separa el menú lateral, el contenido principal, tarjetas, barra de estado y grupos internos.
+
+LabelFrame: agrupa visualmente el formulario de productos y las tablas.
+
+Uso de gestores de geometría
+La ventana principal se usa pack()para separar el menú lateral y el contenido.
+
+El formulario de productos usa grid()para alinear etiquetas y entradas.
+
+No se mezcla pack()y grid()dentro del mismo contenedor.
+
+Funcionamiento del CRUD de productos
+El CRUD se realiza desde la pantalla productos.
+
+Registrar: crea un producto nuevo si el código no está repetido.
+Cargar por codigo: busca un producto por su código y llena el formulario.
+Actualizar: modifica nombre y precio de un producto existente.
+Eliminar: borra un producto existente por código.
+Limpiar: vacia el formulario.
+Cada operación usa los métodos de RestauranteServicio, guarda los cambios en datos/productos.jsony refresca la tabla.
+
+Interacción concommand=
+Los botones se usan command=para ejecutar métodos concretos. Esta semana no profundizamos en el manejo avanzado de eventos.
+
+No se utiliza:
+
+bind()
+doble clic
+selección automática desde la tabla
+eventos de teclado o mouse
+edición directa dentro delTreeview
+Eso queda reservado para la siguiente semana sobre eventos.

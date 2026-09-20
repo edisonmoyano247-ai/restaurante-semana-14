@@ -12,14 +12,28 @@ class AplicacionRestaurante:
         self.root.title("Restaurante - Tkinter")
         self.root.geometry("680x520")
         self.root.minsize(560, 460)
+        self.icono_app = None
 
         # Prepara los servicios que usaran las vistas.
         ruta_base = Path(__file__).resolve().parent
+        self.configurar_icono_ventana(ruta_base)
         archivo_servicio = ArchivoServicio(ruta_base / "datos")
         self.restaurante_servicio = RestauranteServicio(archivo_servicio)
 
         self.vista_actual = None
         self.mostrar_login()
+
+    def configurar_icono_ventana(self, ruta_base):
+        # Usa un PNG pequeno como icono de la ventana.
+        ruta_icono = ruta_base / "assets" / "logo" / "icono.png"
+        if not ruta_icono.exists():
+            return
+
+        try:
+            self.icono_app = tk.PhotoImage(file=str(ruta_icono))
+            self.root.iconphoto(True, self.icono_app)
+        except tk.TclError:
+            pass
 
     def cambiar_vista(self, nueva_vista):
         # Reemplaza la vista actual dentro de la misma ventana.

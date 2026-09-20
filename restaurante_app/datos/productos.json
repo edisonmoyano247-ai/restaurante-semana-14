@@ -13,6 +13,10 @@
         "codigo": "P003",
         "nombre": "Pollo al horno",
         "precio": "5,00"
+    },
+    {
+        "codigo": "P004",
+        "nombre": "Camarones al ajillo",
+        "precio": "7,50"
     }
 ]
-

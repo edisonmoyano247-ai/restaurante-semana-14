@@ -57,3 +57,53 @@ class RestauranteServicio:
     def listar_productos(self):
         # Entrega los productos cargados para mostrarlos en la interfaz.
         return self.productos
+
+    def guardar_productos(self):
+        datos = [
+            {
+                "codigo": producto.codigo,
+                "nombre": producto.nombre,
+                "precio": producto.precio,
+            }
+            for producto in self.productos
+        ]
+        self.archivo_servicio.escribir_json("productos.json", datos)
+
+    def buscar_producto_por_codigo(self, codigo):
+        codigo = codigo.strip()
+        for producto in self.productos:
+            if producto.codigo == codigo:
+                return producto
+        return None
+
+    def registrar_producto(self, codigo, nombre, precio):
+        nuevo_producto = Producto(codigo, nombre, precio)
+
+        if self.buscar_producto_por_codigo(nuevo_producto.codigo) is not None:
+            raise ValueError("Ya existe un producto con ese codigo.")
+
+        self.productos.append(nuevo_producto)
+        self.guardar_productos()
+        return nuevo_producto
+
+    def actualizar_producto(self, codigo, nombre, precio):
+        producto_actual = self.buscar_producto_por_codigo(codigo)
+
+        if producto_actual is None:
+            raise ValueError("No existe un producto con ese codigo.")
+
+        datos_validados = Producto(codigo, nombre, precio)
+        producto_actual.nombre = datos_validados.nombre
+        producto_actual.nombre = datos_validados.nombre
+        self.guardar_productos()
+        return producto_actual
+
+    def eliminar_producto(self, codigo):
+        producto_actual = self.buscar_producto_por_codigo(codigo)
+
+        if producto_actual is None:
+            raise ValueError("No existe un producto con ese codigo.")
+
+        self.productos.remove(producto_actual)
+        self.guardar_productos()
+        return producto_actual

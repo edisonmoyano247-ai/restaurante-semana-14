@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from pathlib import Path
 
 
 class LoginView(tk.Frame):
@@ -11,6 +12,7 @@ class LoginView(tk.Frame):
         self.usuario_entry = None
         self.contrasena_entry = None
         self.mensaje_error = None
+        self.logo = None
 
         self.definir_estilos()
         self.construir_interfaz()
@@ -29,14 +31,34 @@ class LoginView(tk.Frame):
         )
         estilo.map("Login.TButton", background=[("active", "#1d4ed8")])
 
+    def cargar_logo(self):
+        # Carga el logo desde assets/logo usando una ruta relativa al proyecto.
+        ruta_base = Path(__file__).resolve().parent.parent
+        ruta_logo = ruta_base / "assets" / "logo" / "logo.png"
+
+        if not ruta_logo.exists():
+            return None
+
+        logo_original = tk.PhotoImage(file=str(ruta_logo))
+        self.logo = logo_original.subsample(3, 3)
+        return self.logo
+
     def construir_interfaz(self):
         # Construye los componentes visuales del login.
         contenedor = tk.Frame(self, bg="#ffffff", padx=32, pady=28)
         contenedor.place(relx=0.5, rely=0.5, anchor="center")
 
+        logo = self.cargar_logo()
+        if logo is not None:
+            tk.Label(
+                contenedor,
+                image=logo,
+                bg="#ffffff",
+            ).pack(pady=(0, 12)) 
+
         titulo = tk.Label(
             contenedor,
-            text="Restaurante Semana 13",
+            text="Restaurante El Mirador",
             bg="#fffdfd",
             fg="#1f2a44",
             font=("Arial", 22, "bold"),
