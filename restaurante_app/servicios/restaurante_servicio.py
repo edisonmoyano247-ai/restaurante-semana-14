@@ -1,5 +1,8 @@
+from datetime import date
+
 from modelos.producto import Producto
 from modelos.usuario import Usuario
+from modelos.venta import Venta
 
 
 class RestauranteServicio:
@@ -7,12 +10,14 @@ class RestauranteServicio:
         self.archivo_servicio = archivo_servicio
         self.usuarios = []
         self.productos = []
+        self.ventas = []
         self.cargar_datos()
 
     def cargar_datos(self):
         # Carga los datos persistidos y los convierte en objetos.
         usuarios_json = self.archivo_servicio.leer_json("usuarios.json")
         productos_json = self.archivo_servicio.leer_json("productos.json")
+        ventas_json = self.archivo_servicio.leer_json("ventas.json")
 
         self.usuarios = [
             Usuario(
@@ -33,6 +38,17 @@ class RestauranteServicio:
             for datos in productos_json
         ]
 
+            # Elemento nuevo semana 15: carga las ventas persistidas para mostrarlas en la interfaz.
+        self.ventas = [
+            Venta(
+                datos.get("identificador", ""),
+                datos.get("usuario_id", ""),
+                datos.get("producto_codigo", ""),
+                datos.get("fecha", ""),
+            )
+            for datos in ventas_json
+        ]
+
     def validar_acceso(self, usuario, contrasena):
         # Verifica si las credenciales coinciden con un usuario cargado.
         for usuario_registrado in self.usuarios:
@@ -50,6 +66,9 @@ class RestauranteServicio:
     def cantidad_productos(self):
         return len(self.productos)
 
+    def cantidad_ventas(self):
+        return len(self.ventas)    
+    
     def listar_usuarios(self):
         # Entrega los usuarios cargados para mostrarlos en la interfaz.
         return self.usuarios
@@ -76,6 +95,17 @@ class RestauranteServicio:
                 return producto
         return None
 
+    def buscar_usuario_por_identificador(self, identificador):
+        identificador = identificador.strip()
+        for usuario in self.usuarios:
+            if usuario.identificador == identificador:
+                return usuario
+        return None
+
+    def generar_identificador_venta(self):
+        siguiente = len(self.ventas) + 1
+        return f"V{siguiente:03d}"  
+    
     def registrar_producto(self, codigo, nombre, precio):
         nuevo_producto = Producto(codigo, nombre, precio)
 
@@ -107,3 +137,38 @@ class RestauranteServicio:
         self.productos.remove(producto_actual)
         self.guardar_productos()
         return producto_actual
+
+    def guardar_ventas(self):
+        datos = [
+            {
+                "identificador": venta.identificador,
+                "usuario_id": venta.usuario_id,
+                "producto_codigo": venta.producto_codigo,
+                "fecha": venta.fecha,
+            }
+            for venta in self.ventas
+        ]
+        self.archivo_servicio.escribir_json("ventas.json", datos)
+
+    def registrar_venta(self, usuario_id, producto_codigo):
+        usuario_id = usuario_id.strip()
+        producto_codigo = producto_codigo.strip()
+
+        if not usuario_id:
+            raise ValueError("Debe seleccionar un usuario.")
+        if not producto_codigo:
+            raise ValueError("Debe seleccionar un producto.")
+        if self.buscar_usuario_por_identificador(usuario_id) is None:
+            raise ValueError("El usuario seleccionado no existe.")
+        if self.buscar_producto_por_codigo(producto_codigo) is None:
+            raise ValueError("El producto seleccionado no existe.")
+
+        nueva_venta = Venta(
+            self.generar_identificador_venta(),
+            usuario_id,
+            producto_codigo,
+            date.today().isoformat(),
+        )
+        self.ventas.append(nueva_venta)
+        self.guardar_ventas()
+        return nueva_venta

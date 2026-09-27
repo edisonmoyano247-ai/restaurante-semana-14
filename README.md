@@ -1,118 +1,181 @@
-# Fundamentos de interfaces graficas de usuario con Tkinter
+# Fundamentos de manejo de eventos con Tkinter
 
 ## Tema
 
-Componentes y contenedores en una aplicación de biblioteca con Tkinter.
+Semana 15: conceptos fundamentales de manejo de eventos en una aplicacion de restaurante con Tkinter.
 
-## Objetivo de aprendizaje
+## Objetivo
 
-Evolucionar el proyecto de la Semana 13 sin cambiar su arquitectura principal. La aplicación conserva el inicio de sesión, los modelos, los servicios y la persistencia en JSON, pero ahora organiza mejor la interfaz mediante Frameformularios LabelFrame, tablas e iconos.
+Evolucionar el proyecto mejorando al trabajo anterior, la aplicacion conserva el login, la arquitectura por capas, la persistencia JSON, la consulta de usuarios y el CRUD de productos, se agrega una operacion sencilla de venta para observar el flujo entre una accion del usuario, un boton con `command=`, un callback, el servicio, la persistencia y la respuesta visual.
 
-## Evolucion del programa
+## Continuidad desde Semana 14
 
-En el proyecto se implemento, la incorporacón de iconos y logotipo que se guardaron en la carpeta assets/logo; ademas se incorporó la función de agregar, eliminar productos; las nuevas funciones se centrarón en mejorar la experiencia del usuario basada en la interfaz gráfica.
+La interfaz contiene colores, estilos, iconos, menu lateral, barra de estado y organizacion general. La nueva seccion `Ventas` se integra como una capacidad adicional de la misma aplicacion.
 
+## Nueva funcionalidad
 
+La venta relaciona:
 
-## Estructura
+```text
+Usuario + Producto + Fecha -> Venta
+```
 
+La seccion `Ventas` permite:
+
+- seleccionar un usuario registrado con `ttk.Combobox`;
+- seleccionar un producto registrado con `ttk.Combobox`;
+- pulsar el boton `Registrar venta`;
+- ejecutar el callback `registrar_venta()` mediante `command=`;
+- guardar la venta en `datos/ventas.json`;
+- mostrar las ventas registradas en un `ttk.Treeview`.
+
+Flujo educativo:
+
+```text
+Accion del usuario -> Boton -> command= -> callback -> servicio -> JSON -> Treeview actualizado
+```
+
+## Estructura del proyecto
+
+```text
 restaurante_app/
+├── assets/
+│   ├── icons/
+│   │   ├── home.png
+│   │   ├── users.png
+│   │   ├── producto.png
+│   │   ├── sales.png        # opcional para la seccion Ventas
+│   │   ├── logout.png
+│   │   ├── add.png
+│   │   ├── edit.png
+│   │   ├── delete.png
+│   │   ├── search.png
+│   │   └── clean.png
+│   └── logo/
+│       ├── logo.png
+│       └── icono.png
 ├── datos/
 │   ├── productos.json
-│   └── usuarios.json
+│   ├── usuarios.json
+│   └── ventas.json
 ├── modelos/
-│   ├── __init__.py
+│   ├── usuario.py
 │   ├── producto.py
-│   └── usuario.py
+│   └── venta.py
 ├── servicios/
-│   ├── __init__.py
 │   ├── archivo_servicio.py
 │   └── restaurante_servicio.py
 ├── ui/
-│   ├── __init__.py
 │   ├── login_view.py
 │   └── main_view.py
-├── assets/                
-├── main.py
-└── README.md
+└── main.py
+```
 
-## Organización del logo
-El logo principal debe guardarse en:
+## Capas
 
-restaurante_app/assets/logo/logo.png
-El icono de ventana debe guardarse en:
+`modelos/`: define las clases `Usuario`, `Producto` y `Venta`, con validaciones basicas para evitar campos vacios.
 
-restaurante_app/assets/logo/icono.png
-En este proyecto, logo.pngmide 150x150 px. Para que no ocupe demasiado espacio, en el login se reduce con subsample(2, 2)y en el menú lateral se reduce con subsample(3, 3).
+`servicios/`: contiene la logica de consulta, registro, actualizacion, eliminacion y persistencia. `RestauranteServicio` tambien registra ventas.
 
-El archivo icono.pngmide 64x64 px. Ese tamaño funciona bien para el icono de la ventana.
+`datos/`: guarda la informacion persistente en archivos JSON.
 
-La integración se realiza en tres lugares:
+`ui/`: contiene las vistas creadas con Tkinter.
 
-main.py: configura el icono de la ventana usando icono.pngcon root.iconphoto(...).
+`assets/icons/`: contiene iconos PNG usados por los botones. Si falta un icono, la aplicacion sigue funcionando con texto.
 
-ui/login_view.py: carga logo.pngcon tk.PhotoImagey lo muestra sobre el titulo del login.
+## Icono opcional de Ventas
 
-ui/main_view.py: reutiliza logo.png, lo reduce y lo muestra en el menú lateral.
+Para el nuevo boton del menu lateral se espera opcionalmente este archivo:
 
-Importante: las rutas son relativas al proyecto. No se usan rutas absolutas del equipo, por eso el proyecto puede mover de carpeta sin romper la carga de imágenes.
+```text
+restaurante_app/assets/icons/sales.png
+```
 
-Para esta practica se usa PNG porque es mas simple de explicar con tk.PhotoImage. El formato .icopuede usarse en Windows, pero debe ser un icono real y no un PNG renombrado.
+No es obligatorio incluirlo. La funcion `cargar_icono()` devuelve `None` si no lo encuentra y el boton se muestra solo con texto.
 
-Pantallas principales
-LoginView: pantalla de inicio de sesión. Usa el logo del sistema, Entrypara usuario y contraseña, y un botón con command=para validar el acceso.
+## Pantallas principales
 
-Inicio: panel de resumen. Muestra cuántos usuarios y libros existen en los archivos JSON.
+`LoginView`: pantalla de inicio de sesion.
 
-Usuarios: pantalla de consulta. Muestra los usuarios registrados en una tabla, sin CRUD, para mantener esta sección sencilla.
+`Inicio`: panel de resumen con usuarios, productos y ventas.
 
-Libros: pantalla de gestión. Incluye formulario, botones y tabla para registrar, cargar, actualizar y eliminar productos.
+`Usuarios`: pantalla de consulta de usuarios registrados.
 
-Componentes Tkinter utilizados
-Label: productos.
+`Productos`: pantalla de gestion con formulario, botones y tabla para el CRUD basico.
 
-Entry: campos de entrada para iniciar sesión y formulario de libros.
+`Ventas`: pantalla nueva para seleccionar un usuario, seleccionar un producto y registrar una venta simple.
 
-ttk.Button: botones de navegación y acciones.
+## Componentes Tkinter utilizados
 
-ttk.Treeview: tablas de usuarios y productos.
+`Label`: textos y titulos.
 
-ttk.Scrollbar: barra de desplazamiento para las tablas.
+`Entry`: campos de entrada para login y formulario de productos.
 
-messagebox: mensajes simples de confirmación o error.
+`ttk.Combobox`: selectores de usuario y producto en la vista de ventas.
 
-Contenedores utilizados
-Tk: ventana principal de la aplicación.
+`ttk.Button`: botones de navegacion y acciones con `command=`.
 
-Frame: separa el menú lateral, el contenido principal, tarjetas, barra de estado y grupos internos.
+`ttk.Treeview`: tablas de usuarios, productos y ventas.
 
-LabelFrame: agrupa visualmente el formulario de productos y las tablas.
+`ttk.Scrollbar`: barra de desplazamiento para las tablas.
 
-Uso de gestores de geometría
-La ventana principal se usa pack()para separar el menú lateral y el contenido.
+`messagebox`: mensajes simples de confirmacion o error.
 
-El formulario de productos usa grid()para alinear etiquetas y entradas.
+## Persistencia
 
-No se mezcla pack()y grid()dentro del mismo contenedor.
+Los usuarios, productos y ventas se cargan desde JSON al iniciar la aplicacion.
 
-Funcionamiento del CRUD de productos
-El CRUD se realiza desde la pantalla productos.
+```text
+restaurante_app/datos/usuarios.json
+restaurante_app/datos/productos.json
+restaurante_app/datos/ventas.json
+```
 
-Registrar: crea un producto nuevo si el código no está repetido.
-Cargar por codigo: busca un producto por su código y llena el formulario.
-Actualizar: modifica nombre y precio de un producto existente.
-Eliminar: borra un producto existente por código.
-Limpiar: vacia el formulario.
-Cada operación usa los métodos de RestauranteServicio, guarda los cambios en datos/productos.jsony refresca la tabla.
+Al registrar una venta, el servicio agrega el objeto a la coleccion en memoria, convierte las ventas a datos serializables y escribe `ventas.json`.
 
-Interacción concommand=
-Los botones se usan command=para ejecutar métodos concretos. Esta semana no profundizamos en el manejo avanzado de eventos.
+## Que NO se trabaja todavia
 
-No se utiliza:
+En Semana 15 no se utilizan eventos avanzados. No se implementa:
 
-bind()
-doble clic
-selección automática desde la tabla
-eventos de teclado o mouse
-edición directa dentro delTreeview
-Eso queda reservado para la siguiente semana sobre eventos.
+- `bind()`;
+- doble clic;
+- eventos de teclado;
+- eventos de mouse;
+- `<<TreeviewSelect>>`;
+- carga automatica desde tablas;
+- seleccion reactiva de filas.
+
+Estos conceptos quedan para la siguiente semana de manejo de eventos.
+
+## Como ejecutar
+
+Desde la carpeta del proyecto:
+
+```powershell
+cd "C:\Users\Usuario\OneDrive\Documentos\Clase Semana 15 POO\restaurante_app"
+py main.py
+```
+
+Si `python` esta disponible:
+
+```powershell
+python main.py
+```
+
+## Credenciales de demostracion
+
+Usuario: `admin`
+
+Contrasena: `1234`
+
+
+## Nota
+
+El proyecto mantiene una implementacion sencilla para que el estudiante pueda seguir el crecimiento progresivo de la aplicacion:
+
+```text
+Semana 14: componentes y contenedores
+Semana 15: accion -> command= -> callback -> servicio -> persistencia -> respuesta visual
+```
+
+La venta no representa todavia un sistema comercial completo. Solo muestra una relacion clara entre un usuario y un producto para estudiar los fundamentos del manejo de eventos mediante botones.

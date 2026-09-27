@@ -21,15 +21,20 @@ class MainView(tk.Frame):
         self.producto_precio_entry = None
         self.tabla_productos = None
         self.tabla_usuarios = None
+        self.usuario_venta_combo = None
+        self.producto_venta_combo = None
+        self.tabla_ventas = None
+        self.opciones_usuarios_venta = {}
+        self.opciones_productos_venta = {}
 
         self.definir_estilos()
         self.construir_interfaz()
+
     #__________________________________________________
-    # Configuración de iconos y colores de la interfaz
+    # Configuración de identidad visual
     #___________________________________________________
 
     def definir_estilos(self):
-        # Define colores y estilos reutilizables de esta vista.
         self.color_fondo = "#f7fafc"
         self.color_encabezado = "#1f2a44"
         self.color_texto = "#243447"
@@ -154,7 +159,8 @@ class MainView(tk.Frame):
 
         self.crear_boton_menu(frame_sidebar, "Inicio", self.mostrar_inicio, "home.png")
         self.crear_boton_menu(frame_sidebar, "Usuarios", self.mostrar_usuarios, "users.png")
-        self.crear_boton_menu(frame_sidebar, "Producto", self.mostrar_productos, "products.png")
+        self.crear_boton_menu(frame_sidebar, "Productos", self.mostrar_productos, "products.png")
+        self.crear_boton_menu(frame_sidebar, "Ventas", self.mostrar_ventas, "sales.png")
 
         tk.Frame(frame_sidebar, bg=self.color_encabezado).pack(fill="both", expand=True)
 
@@ -208,6 +214,7 @@ class MainView(tk.Frame):
             text=(
                 f"Productos: {self.restaurante_servicio.cantidad_productos()} | "
                 f"Usuarios: {self.restaurante_servicio.cantidad_usuarios()} | "
+                f"Ventas: {self.restaurante_servicio.cantidad_ventas()} | "
                 "Datos JSON locales"
             )
         )
@@ -218,7 +225,6 @@ class MainView(tk.Frame):
     def mostrar_inicio(self):
         self.marcar_seccion("Inicio")
         self.limpiar_contenido()
-        self.actualizar_barra_estado()
 
         assert self.contenido is not None
 
@@ -242,6 +248,9 @@ class MainView(tk.Frame):
         resumen.pack(fill="x")
         self.crear_tarjeta_resumen(resumen, "Usuarios registrados", self.restaurante_servicio.cantidad_usuarios())
         self.crear_tarjeta_resumen(resumen, "Productos registrados", self.restaurante_servicio.cantidad_productos())
+        self.crear_tarjeta_resumen(resumen, "Ventas registradas", self.restaurante_servicio.cantidad_ventas())
+        
+        self.actualizar_barra_estado()
 
     def crear_tarjeta_resumen(self, contenedor, nombre, valor):
         tarjeta = tk.Frame(contenedor, bg=self.color_panel, padx=18, pady=16)
@@ -294,7 +303,7 @@ class MainView(tk.Frame):
         self.actualizar_barra_estado()
 
     # -------------------------------------------------------------------------
-    # Vista de libros: formulario + tabla + CRUD basico por botones.
+    # Vista de productos: formulario + tabla + CRUD basico por botones.
     # -------------------------------------------------------------------------
     def mostrar_productos(self):
         self.marcar_seccion("Productos")
@@ -411,6 +420,131 @@ class MainView(tk.Frame):
         self.limpiar_tabla(self.tabla_productos)
         for producto in self.restaurante_servicio.listar_productos():
             self.tabla_productos.insert("", tk.END, values=(producto.codigo, producto.nombre, producto.precio))
+
+        self.actualizar_barra_estado()
+
+    # -------------------------------------------------------------------------
+    # Ventas: seccion nueva se incluye para estudiar command= y callbacks.
+    # -------------------------------------------------------------------------
+    def mostrar_ventas(self):
+        self.marcar_seccion("Ventas")
+        self.limpiar_contenido()
+
+        assert self.contenido is not None
+
+        self.crear_titulo_seccion("Ventas")
+
+        cuerpo = tk.Frame(self.contenido, bg=self.color_fondo)
+        cuerpo.pack(fill="both", expand=True)
+        cuerpo.grid_columnconfigure(1, weight=1)
+        cuerpo.grid_rowconfigure(0, weight=1)
+
+        formulario = tk.LabelFrame(
+            cuerpo,
+            text="Registrar venta",
+            bg=self.color_panel,
+            fg=self.color_encabezado,
+            font=("Arial", 10, "bold"),
+            padx=14,
+            pady=14,
+        )
+        formulario.grid(row=0, column=0, sticky="n", padx=(0, 18))
+
+        self.usuario_venta_combo = self.crear_selector_venta(
+            formulario,
+            "Usuario",
+            0,
+            self.obtener_opciones_usuarios_venta(),
+        )
+        self.producto_venta_combo = self.crear_selector_venta(
+            formulario,
+            "Producto",
+            1,
+            self.obtener_opciones_productos_venta(),
+        )
+
+        acciones = tk.Frame(formulario, bg=self.color_panel)
+        acciones.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(12, 0))
+
+        self.crear_boton(
+            acciones,
+            "Registrar venta",
+            self.registrar_venta,
+            "Accion.TButton",
+            "add.png",
+        ).pack(fill="x")
+
+        listado = self.crear_listado(cuerpo, "Ventas registradas", usar_grid=True)
+        self.tabla_ventas = self.crear_tabla(
+            listado,
+            ("identificador", "usuario", "producto", "fecha"),
+            ("Venta", "Usuario", "Producto", "Fecha"),
+        )
+        self.refrescar_ventas()
+
+    def crear_selector_venta(self, contenedor, etiqueta, fila, opciones):
+        tk.Label(
+            contenedor,
+            text=etiqueta,
+            bg=self.color_panel,
+            fg=self.color_texto,
+            font=("Arial", 10, "bold"),
+        ).grid(row=fila, column=0, sticky="w", pady=(0, 8), padx=(0, 10))
+
+        selector = ttk.Combobox(contenedor, values=list(opciones.keys()), state="readonly", width=34)
+        selector.grid(row=fila, column=1, sticky="ew", pady=(0, 8))
+        return selector
+
+    def obtener_opciones_usuarios_venta(self):
+        self.opciones_usuarios_venta = {
+            f"{usuario.identificador} - {usuario.nombre}": usuario.identificador
+            for usuario in self.restaurante_servicio.listar_usuarios()
+        }
+        return self.opciones_usuarios_venta
+
+    def obtener_opciones_productos_venta(self):
+        self.opciones_productos_venta = {
+            f"{producto.codigo} - {producto.nombre}": producto.codigo
+            for producto in self.restaurante_servicio.listar_productos()
+        }
+        return self.opciones_productos_venta
+
+    def registrar_venta(self):
+        assert self.usuario_venta_combo is not None
+        assert self.producto_venta_combo is not None
+
+        usuario_id = self.opciones_usuarios_venta.get(self.usuario_venta_combo.get(), "")
+        producto_codigo = self.opciones_productos_venta.get(self.producto_venta_combo.get(), "")
+
+        try:
+            self.restaurante_servicio.registrar_venta(usuario_id, producto_codigo)
+            self.limpiar_formulario_venta()
+            self.refrescar_ventas()
+            messagebox.showinfo("Ventas", "Venta registrada correctamente.")
+        except ValueError as error:
+            messagebox.showerror("Ventas", str(error))
+
+    def limpiar_formulario_venta(self):
+        assert self.usuario_venta_combo is not None
+        assert self.producto_venta_combo is not None
+
+        self.usuario_venta_combo.set("")
+        self.producto_venta_combo.set("")
+
+    def refrescar_ventas(self):
+        assert self.tabla_ventas is not None
+
+        self.limpiar_tabla(self.tabla_ventas)
+        for venta in self.restaurante_servicio.listar_ventas():
+            usuario = self.restaurante_servicio.buscar_usuario_por_identificador(venta.usuario_id)
+            producto = self.restaurante_servicio.buscar_producto_por_codigo(venta.producto_codigo)
+            texto_usuario = venta.usuario_id if usuario is None else f"{usuario.identificador} - {usuario.nombre}"
+            texto_producto = venta.producto_codigo if producto is None else f"{producto.codigo} - {producto.nombre}"
+            self.tabla_ventas.insert(
+                "",
+                tk.END,
+                values=(venta.identificador, texto_usuario, texto_producto, venta.fecha),
+            )
 
         self.actualizar_barra_estado()
 
